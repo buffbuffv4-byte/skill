@@ -34,7 +34,7 @@ QStringList SystemScanner::scan() const {
     SYSTEM_INFO si{}; GetNativeSystemInfo(&si);
     out << "Процессор: " + cpuName()
         << "Видеокарта / адаптер: " + gpuName()
-        << QString("Логических потоков CPU: %1").arg(GetActiveProcessorCount(ALL_PROCESSOR_GROUPS))
+        << QString("Логических потоков CPU: %1").arg(si.dwNumberOfProcessors)
         << QString("Архитектура системы: %1").arg(QSysInfo::currentCpuArchitecture())
         << "Операционная система: " + QSysInfo::prettyProductName();
     MEMORYSTATUSEX mem{}; mem.dwLength = sizeof(mem);

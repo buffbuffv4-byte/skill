@@ -1,8 +1,6 @@
 #pragma once
 #include <QString>
-#include <QStringList>
 #include <QVector>
-#include <QtGlobal>
 
 struct TempFileInfo {
     QString path;

@@ -20,12 +20,16 @@ private slots:
     void scanTemp();
     void deleteSelectedTemp();
     void runSystemScan();
+    void launchCS2();
+    void openGameModeSettings();
+    void copyLaunchOption();
 private:
     QWidget* makeMetric(const QString& title, QLabel **value, QProgressBar **bar = nullptr);
     QWidget* buildHome();
     QWidget* buildScan();
     QWidget* buildCleaner();
     QWidget* buildMonitor();
+    QWidget* buildGameBoost();
     QWidget* buildAbout();
     QWidget* buildUnavailable(const QString& title, const QString& details);
     void addNavButton(const QString& label, int index);

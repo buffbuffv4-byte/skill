@@ -18,6 +18,8 @@
 #include <QStandardPaths>
 #include <QCheckBox>
 #include <QListWidgetItem>
+#include <QClipboard>
+#include <QGuiApplication>
 
 static QWidget* card(QWidget *child, const QString& heading = {}) {
     auto *frame = new QFrame;
@@ -35,20 +37,20 @@ static QLabel* bodyLabel(const QString& text) {
     auto *l = new QLabel(text); l->setWordWrap(true); l->setObjectName("muted"); return l;
 }
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
-    setWindowTitle("SkillOpti 0.1.0 BETA");
+    setWindowTitle("SkillOpti (CS2) 0.2.0 BETA");
     setMinimumSize(940, 620);
     resize(1180, 760);
     auto *central = new QWidget;
     auto *root = new QHBoxLayout(central); root->setContentsMargins(0,0,0,0); root->setSpacing(0);
-    auto *sidebar = new QFrame; sidebar->setObjectName("sidebar"); sidebar->setFixedWidth(220);
+    auto *sidebar = new QFrame; sidebar->setObjectName("sidebar"); sidebar->setFixedWidth(230);
     auto *side = new QVBoxLayout(sidebar); sideLayout = side; side->setContentsMargins(16,20,16,16); side->setSpacing(7);
-    auto *brand = new QLabel("SkillOpti"); brand->setObjectName("brand"); side->addWidget(brand);
-    auto *ver = new QLabel("0.1.0 BETA"); ver->setObjectName("muted"); side->addWidget(ver);
+    auto *brand = new QLabel("SkillOpti (CS2)"); brand->setObjectName("brand"); side->addWidget(brand);
+    auto *ver = new QLabel("0.2.0 BETA"); ver->setObjectName("muted"); side->addWidget(ver);
     side->addSpacing(18);
     addNavButton("⌂   Главная",0); addNavButton("▦   Сканирование ПК",1); addNavButton("♲   Очистка",2);
     addNavButton("◈   Мониторинг",3);
     side->addSpacing(10);
-    auto *future = new QLabel("СЛЕДУЮЩИЕ ВЕРСИИ"); future->setObjectName("sectionLabel"); side->addWidget(future);
+    auto *future = new QLabel("ИГРОВЫЕ ИНСТРУМЕНТЫ"); future->setObjectName("sectionLabel"); side->addWidget(future);
     addNavButton("⚡   Game Boost",4); addNavButton("▤   Игровые профили",5);
     addNavButton("⇧   Автозагрузка",6); addNavButton("↶   Восстановление",7);
     side->addStretch();
@@ -57,7 +59,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     pages = new QStackedWidget; pages->setObjectName("pageStack");
     pages->addWidget(buildHome()); pages->addWidget(buildScan()); pages->addWidget(buildCleaner());
     pages->addWidget(buildMonitor());
-    pages->addWidget(buildUnavailable("Game Boost","Версия 0.1.0 не завершает процессы. Модуль будет добавлен после отдельной реализации безопасного списка пользовательских процессов."));
+    pages->addWidget(buildGameBoost());
     pages->addWidget(buildUnavailable("Игровые профили","Профили CS2, Rust Devblog и Minecraft Java запланированы для следующей версии. В этой версии файлы игр не изменяются."));
     pages->addWidget(buildUnavailable("Автозагрузка","Изменение автозагрузки пока не реализовано. Здесь ничего не отключается и не меняется."));
     pages->addWidget(buildUnavailable("Восстановление","Журнал и откат изменений появятся вместе с функциями, которые будут менять системные настройки. Сейчас изменения системы не выполняются."));
@@ -133,11 +135,33 @@ QWidget* MainWindow::buildMonitor() {
     grid->addWidget(card(monitorCpu,"CPU Usage"),0,0); grid->addWidget(card(monitorRam,"RAM Usage"),0,1); grid->addWidget(card(monitorDisk,"Disk Usage"),1,0);
     l->addLayout(grid); l->addStretch(); return page;
 }
+
+QWidget* MainWindow::buildGameBoost() {
+    auto *page = new QWidget; auto *l = new QVBoxLayout(page);
+    l->setContentsMargins(28,24,28,24); l->setSpacing(14);
+    auto *title = new QLabel("Game Boost · CS2"); title->setObjectName("pageTitle"); l->addWidget(title);
+    l->addWidget(bodyLabel("Безопасные игровые инструменты. Здесь нет скрытых твиков реестра, отключения служб или обещаний несуществующего прироста FPS."));
+
+    l->addWidget(card(bodyLabel("Запустит Counter-Strike 2 через Steam. Если Steam не установлен или не запущен, сначала открой Steam обычным способом."),"Запустить игру"));
+    auto *launch = new QPushButton("Запустить Counter-Strike 2"); launch->setObjectName("primaryButton");
+    connect(launch,&QPushButton::clicked,this,&MainWindow::launchCS2); l->addWidget(launch,0,Qt::AlignLeft);
+
+    l->addWidget(card(bodyLabel("Откроются системные настройки Windows, где можно вручную проверить или включить Игровой режим. Приложение не меняет настройку автоматически."),"Игровой режим Windows"));
+    auto *settings = new QPushButton("Открыть настройки игрового режима"); settings->setObjectName("secondaryButton");
+    connect(settings,&QPushButton::clicked,this,&MainWindow::openGameModeSettings); l->addWidget(settings,0,Qt::AlignLeft);
+
+    l->addWidget(card(bodyLabel("Необязательный параметр запуска: -novid (пропускает вступительный ролик). Он не повышает FPS сам по себе. Скопируй его и вставь в Steam → CS2 → Свойства → Параметры запуска."),"Параметр запуска CS2"));
+    auto *copy = new QPushButton("Скопировать -novid"); copy->setObjectName("secondaryButton");
+    connect(copy,&QPushButton::clicked,this,&MainWindow::copyLaunchOption); l->addWidget(copy,0,Qt::AlignLeft);
+    l->addWidget(bodyLabel("Кнопки выше выполняют реальные действия, но не изменяют системные параметры автоматически. Изменения Windows и Steam остаются под твоим контролем."));
+    l->addStretch(); return page;
+}
+
 QWidget* MainWindow::buildAbout() {
     auto *p = new QWidget; auto *l = new QVBoxLayout(p); l->setContentsMargins(28,24,28,24);
     auto *t = new QLabel("О программе"); t->setObjectName("pageTitle"); l->addWidget(t);
-    auto *desc = bodyLabel("SkillOpti 0.1.0 BETA\n\nБезопасный мониторинг, диагностика и очистка временных файлов для Windows 10/11.\n\nВ этой версии реализованы мониторинг CPU/RAM/диска, сканирование характеристик и очистка временных файлов с подтверждением. Game Boost, игровые профили, автозагрузка и восстановление пока не выполняют действий.\n\nНе требуется отключать антивирус, менять службы, разгонять оборудование или редактировать реестр.");
-    l->addWidget(card(desc,"SkillOpti")); l->addStretch(); return p;
+    auto *desc = bodyLabel("SkillOpti (CS2) 0.2.0 BETA\\n\\nБезопасный мониторинг, диагностика, очистка временных файлов и игровые инструменты для Windows 10/11.\\n\\nGame Boost умеет запускать CS2, открывать настройки игрового режима Windows и копировать необязательный параметр -novid. Это не гарантирует прирост FPS.\\n\\nИгровые профили, автозагрузка и восстановление пока не реализованы. Программа не отключает антивирус, системные службы и защиту Windows.");
+    desc->setText(desc->text().replace("\\\\n","\\n")); l->addWidget(card(desc,"SkillOpti")); l->addStretch(); return p;
 }
 QWidget* MainWindow::buildUnavailable(const QString& title, const QString& details) {
     auto *p = new QWidget; auto *l = new QVBoxLayout(p); l->setContentsMargins(28,24,28,24);
@@ -182,7 +206,7 @@ void MainWindow::scanTemp() {
         item->setData(Qt::UserRole, f.path);
         item->setToolTip(f.path);
     }
-    tempSummary->setText(QString("Найдено файлов: %1 · Общий размер: %2\n%3").arg(tempFiles.size()).arg(formatBytes(total)).arg(warnings.join(" ")));
+    tempSummary->setText(QString("Найдено файлов: %1 · Общий размер: %2\\n%3").arg(tempFiles.size()).arg(formatBytes(total)).arg(warnings.join(" ")).replace("\\\\n","\\n"));
 }
 void MainWindow::deleteSelectedTemp() {
     const auto selected = tempResults->selectedItems();
@@ -191,7 +215,7 @@ void MainWindow::deleteSelectedTemp() {
         return;
     }
     const auto answer = QMessageBox::warning(this,"Подтверждение удаления",
-        QString("Удалить выбранные временные файлы (%1 шт.)?\nФайлы будут удалены без помещения в корзину.").arg(selected.size()),
+        QString("Удалить выбранные временные файлы (%1 шт.)?\\nФайлы будут удалены без помещения в корзину.").arg(selected.size()).replace("\\\\n","\\n"),
         QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
     if(answer != QMessageBox::Yes) return;
     QVector<TempFileInfo> chosen;
@@ -201,7 +225,22 @@ void MainWindow::deleteSelectedTemp() {
     }
     const auto result = cleaner.removeSelected(chosen);
     QMessageBox::information(this,"Результат очистки",
-        QString("Удалено файлов: %1\nПропущено: %2\nОсвобождено: %3")
-        .arg(result.deleted).arg(result.skipped).arg(formatBytes(result.bytesDeleted)));
+        QString("Удалено файлов: %1\\nПропущено: %2\\nОсвобождено: %3")
+        .arg(result.deleted).arg(result.skipped).arg(formatBytes(result.bytesDeleted)).replace("\\\\n","\\n"));
     scanTemp();
+}
+
+void MainWindow::launchCS2() {
+    if (!QDesktopServices::openUrl(QUrl("steam://rungameid/730"))) {
+        QMessageBox::warning(this, "SkillOpti (CS2)", "Не удалось открыть Steam-ссылку. Запусти Steam и попробуй ещё раз.");
+    }
+}
+void MainWindow::openGameModeSettings() {
+    if (!QDesktopServices::openUrl(QUrl("ms-settings:gaming-gamemode"))) {
+        QMessageBox::warning(this, "SkillOpti (CS2)", "Не удалось открыть настройки. Открой Параметры Windows → Игры → Игровой режим вручную.");
+    }
+}
+void MainWindow::copyLaunchOption() {
+    QGuiApplication::clipboard()->setText("-novid");
+    QMessageBox::information(this, "SkillOpti (CS2)", "Параметр -novid скопирован.\nВставь его в Steam → CS2 → Свойства → Параметры запуска.");
 }

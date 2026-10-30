@@ -23,6 +23,6 @@ QScrollBar:vertical { background: #0a100c; width: 10px; margin: 0; }
 QScrollBar::handle:vertical { background: #2a4834; border-radius: 4px; min-height: 25px; }
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }
 QMessageBox { background: #101a14; }
-QFrame#card QLabel, QFrame#card QWidget { background: transparent; }
-QFrame#sidebar QLabel, QFrame#sidebar QPushButton#navButton { background: transparent; }
-QFrame#card QProgressBar { background: #1c2b21; }
+
+QPushButton#secondaryButton { background: #17271c; color: #dcefe2; border: 1px solid #2a4a35; border-radius: 8px; padding: 10px 16px; font-weight: 600; }
+QPushButton#secondaryButton:hover { background: #203b2a; color: #20e58a; }
