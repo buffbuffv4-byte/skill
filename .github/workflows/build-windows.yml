@@ -1,0 +1,40 @@
+
+name: Build SkillOpti for Windows
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-2022
+
+    steps:
+      - name: Download source
+        uses: actions/checkout@v4
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.8.3'
+          arch: 'win64_msvc2022_64'
+          cache: true
+
+      - name: Configure project
+        run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DCMAKE_PREFIX_PATH="$env:QT_ROOT_DIR"
+
+      - name: Compile
+        run: cmake --build build --config Release
+
+      - name: Deploy Qt libraries
+        run: windeployqt build/Release/SkillOpti.exe
+
+      - name: Package EXE
+        run: Compress-Archive -Path build/Release/* -DestinationPath SkillOpti-Windows.zip
+
+      - name: Upload application
+        uses: actions/upload-artifact@v4
+        with:
+          name: SkillOpti-Windows
+          path: SkillOpti-Windows.zip
